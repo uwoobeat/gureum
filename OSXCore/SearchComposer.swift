@@ -53,10 +53,10 @@ final class SearchComposer: Composer {
         return nil
     }
 
-    public private(set) var candidates: [NSAttributedString]?
+    private(set) var candidates: [NSAttributedString]?
     private var _bufferedString = ""
-    public private(set) var composedString = ""
-    public private(set) var commitString = ""
+    private(set) var composedString = ""
+    private(set) var commitString = ""
 
     // 검색을 위한 백그라운드 스레드
     private var _searchWorkItem = DispatchWorkItem {}
@@ -67,7 +67,7 @@ final class SearchComposer: Composer {
 
     // MARK: Composer 프로토콜 구현
 
-    public var delegate: Composer!
+    var delegate: Composer!
 
     // 한자 합성의 경우 현재 진행 중인 조합 + 한글 입력기가 지금까지 완료한 조합.
     var originalString: String {
@@ -216,7 +216,16 @@ extension SearchComposer {
         dlog(DEBUG_SEARCH_COMPOSER, "DEBUG 2, DelegatedComposer.update(client:) DEBUG POINT 1")
         if isInvalidMarkedRage, selectedRange.location != NSNotFound, selectedRange.length > 0 {
             let selectedString = sender.attributedSubstring(from: selectedRange).string
-            sender.setMarkedText(selectedString, selectionRange: selectedRange, replacementRange: selectedRange)
+
+            // Create NSAttributedString with clear background and underline only
+            let attributes: [NSAttributedString.Key: Any] = [
+                .underlineStyle: NSUnderlineStyle.single.rawValue,
+                .backgroundColor: NSColor.clear,
+                .foregroundColor: NSColor.labelColor,
+            ]
+            let attributedSelectedString = NSAttributedString(string: selectedString, attributes: attributes)
+
+            sender.setMarkedText(attributedSelectedString, selectionRange: selectedRange, replacementRange: selectedRange)
             dlog(DEBUG_SEARCH_COMPOSER,
                  "DEBUG 3, DelegatedComposer.update(client:) marking: %@ / selected: %@",
                  NSStringFromRange(sender.markedRange()),
@@ -277,7 +286,7 @@ extension SearchComposer {
         return workItem
     }
 
-    public func cancelSearch() {
+    func cancelSearch() {
         if !_searchWorkItem.isCancelled {
             _searchWorkItem.cancel()
         }
