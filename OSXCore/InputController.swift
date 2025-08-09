@@ -256,14 +256,44 @@ public extension InputController { // IMKServerInput
         dlog(DEBUG_LOGGING, "LOGGING::EVENT::UPDATE-RAW?")
         dlog(DEBUG_INPUTCONTROLLER, "** InputController -updateComposition")
         receiver.updateCompositionEvent()
-        super.updateComposition()
+
+        // Replace super.updateComposition() with our custom implementation
+        // to use NSAttributedString instead of plain string
+        let client = self.client() as! (IMKTextInput & IMKUnicodeTextInput)
+        let composed = composedString(client) as! String
+        let markedRange = client.markedRange()
+
+        // Create NSAttributedString with clear background and underline only
+        let attributes: [NSAttributedString.Key: Any] = [
+            .underlineStyle: NSUnderlineStyle.single.rawValue,
+            .backgroundColor: NSColor.clear,
+            .foregroundColor: NSColor.labelColor,
+        ]
+        let attributedComposed = NSAttributedString(string: composed, attributes: attributes)
+
+        client.setMarkedText(attributedComposed, selectionRange: NSRange(location: 0, length: composed.count), replacementRange: markedRange)
+
         dlog(DEBUG_INPUTCONTROLLER, "** InputController -updateComposition ended")
     }
 
     @objc override func cancelComposition() {
         dlog(DEBUG_LOGGING, "LOGGING::EVENT::CANCEL-RAW?")
         receiver.cancelCompositionEvent()
-        super.cancelComposition()
+
+        // Replace super.cancelComposition() with our custom implementation
+        // to use NSAttributedString instead of plain string
+        let client = self.client() as! (IMKTextInput & IMKUnicodeTextInput)
+        let markedRange = client.markedRange()
+
+        // Create NSAttributedString with clear background and underline only
+        let attributes: [NSAttributedString.Key: Any] = [
+            .underlineStyle: NSUnderlineStyle.single.rawValue,
+            .backgroundColor: NSColor.clear,
+            .foregroundColor: NSColor.labelColor,
+        ]
+        let attributedEmpty = NSAttributedString(string: "", attributes: attributes)
+
+        client.setMarkedText(attributedEmpty, selectionRange: NSRange(location: markedRange.location, length: 0), replacementRange: markedRange)
     }
 
     // Getting Input Strings and Candidates
@@ -356,7 +386,16 @@ public extension InputController { // IMKServerInput
             let composed = composedString(client) as! String
             let markedRange = client.markedRange()
             let view = receiver.inputClient as! NSTextView
-            view.setMarkedText(composed, selectedRange: NSRange(location: 0, length: composed.count), replacementRange: markedRange)
+
+            // Create NSAttributedString with clear background and underline only
+            let attributes: [NSAttributedString.Key: Any] = [
+                .underlineStyle: NSUnderlineStyle.single.rawValue,
+                .backgroundColor: NSColor.clear,
+                .foregroundColor: NSColor.labelColor,
+            ]
+            let attributedComposed = NSAttributedString(string: composed, attributes: attributes)
+
+            view.setMarkedText(attributedComposed, selectedRange: NSRange(location: 0, length: composed.count), replacementRange: markedRange)
         }
 
         override func cancelComposition() {
@@ -365,7 +404,16 @@ public extension InputController { // IMKServerInput
             let client = receiver.inputClient
             let view = receiver.inputClient as! NSTextView
             let markedRange = client.markedRange()
-            view.setMarkedText("", selectedRange: NSRange(location: markedRange.location, length: 0), replacementRange: markedRange)
+
+            // Create NSAttributedString with clear background and underline only
+            let attributes: [NSAttributedString.Key: Any] = [
+                .underlineStyle: NSUnderlineStyle.single.rawValue,
+                .backgroundColor: NSColor.clear,
+                .foregroundColor: NSColor.labelColor,
+            ]
+            let attributedEmpty = NSAttributedString(string: "", attributes: attributes)
+
+            view.setMarkedText(attributedEmpty, selectedRange: NSRange(location: markedRange.location, length: 0), replacementRange: markedRange)
         }
 
         // Getting Input Strings and Candidates

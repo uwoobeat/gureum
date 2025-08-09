@@ -207,7 +207,15 @@ extension InputReceiver { // IMKServerInput
 
     func originalString(_: IMKTextInput & IMKUnicodeTextInput) -> NSAttributedString {
         dlog(DEBUG_INPUTCONTROLLER, "** InputController -originalString:")
-        let s = NSAttributedString(string: composer.originalString)
+
+        // Create NSAttributedString with clear background and underline only
+        let attributes: [NSAttributedString.Key: Any] = [
+            .underlineStyle: NSUnderlineStyle.single.rawValue,
+            .backgroundColor: NSColor.clear,
+            .foregroundColor: NSColor.labelColor,
+        ]
+        let s = NSAttributedString(string: composer.originalString, attributes: attributes)
+
         dlog(DEBUG_LOGGING, "LOGGING::CHECK::ORIGINALSTRING::%@", s.string)
         return s
     }
