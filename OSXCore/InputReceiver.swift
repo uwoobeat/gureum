@@ -208,7 +208,7 @@ extension InputReceiver { // IMKServerInput
     func originalString(_: IMKTextInput & IMKUnicodeTextInput) -> NSAttributedString {
         dlog(DEBUG_INPUTCONTROLLER, "** InputController -originalString:")
 
-        // Create NSAttributedString with clear background and underline only
+        // 하이라이팅 제거를 위한 NSAttributedString 사용
         let attributes: [NSAttributedString.Key: Any] = [
             .underlineStyle: NSUnderlineStyle.single.rawValue,
             .backgroundColor: NSColor.clear,
