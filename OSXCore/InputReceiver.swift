@@ -61,6 +61,24 @@ public class InputReceiver: InputTextDelegate {
 //            marked = selected
         }
 
+        // Cmd+A 특별 처리: marked text가 있을 때 즉시 커밋하고 전체 선택
+        if flags.contains(.command) && keyCode == .ansiA {
+            let hasMarkedText = marked.length > 0
+            if hasMarkedText {
+                // inputting 상태로 설정하여 정상적인 커밋 플로우 사용
+                inputting = true
+                // 현재 조합을 정상적으로 커밋
+                let commited = commitCompositionEvent(sender)
+                inputting = false
+                if commited {
+                    // 조합이 커밋되었으면 composition 업데이트
+                    updateComposition()
+                }
+            }
+            // selectAll 명령을 애플리케이션에 전달 - IME에서 처리하지 않고 애플리케이션으로 전달
+            return InputResult(processed: false, action: .none)
+        }
+
         // 입력기용 특수 커맨드 처리
         if let command = composer.filterCommand(keyCode: keyCode, modifiers: flags, client: sender) {
             let result = input(event: command, client: sender)
